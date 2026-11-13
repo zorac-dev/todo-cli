@@ -23,7 +23,7 @@ Windows（PowerShell）での起動：
 .\.venv\Scripts\python.exe todo.py --help
 ```
 
-## `todo` コマンドの設定
+## `t`・`todo` コマンドの設定
 
 次のひな形を設定ファイルへコピーし、先頭のパスを実際の `todo-cli` フォルダの絶対パスに変更してください。
 
@@ -33,30 +33,35 @@ Windows（PowerShell）での起動：
 | zsh | [todo.bash-zsh.sh](shell/todo.bash-zsh.sh) | `~/.zshrc` | `source ~/.zshrc` |
 | PowerShell | [todo.powershell.ps1](shell/todo.powershell.ps1) | `$PROFILE` | `. $PROFILE` |
 
-設定後は、どのフォルダからでも以下のコマンドを使えます。
+設定後は、どのフォルダからでも `t`・`todo` を使えます。すでに設定済みの場合は、ひな形の末尾にある `t` 関数を設定ファイルへ追記し、再読み込みしてください。
+
+従来の `todo list`・`todo add` なども引き続き使えます。`t list`・`todo l` のように組み合わせることもできます。
 
 ## 基本操作
 
+サブコマンドの省略形: `list → l`、`add → a`、`edit → e`、`check → c`、`uncheck → uc`、`delete → d`、`archive → ar`、`restore → r`、`undo → u`。
+`archive list` は `ar l` と省略できます。オプションは従来と同じです。
+
 | 操作 | コマンド例 |
 | --- | --- |
-| 追加（優先度：高） | `todo add "h:見積書を送付する"` |
-| 追加（優先度：中） | `todo add "m:資料を確認する"` |
-| 追加（優先度：低） | `todo add "l:読みたい本を整理する"` |
-| 未完了の一覧 | `todo list` |
-| 完了を含む一覧 | `todo list --all` |
-| 完了のみの一覧 | `todo list --completed` |
-| 名前で検索 | `todo list --search "見積"` |
-| 優先度で絞り込み | `todo list --priority high` |
-| 名前を変更 | `todo edit 1 --name "見積書を確認して送付する"` |
-| 優先度を変更 | `todo edit 1 --priority low` |
-| 完了にする | `todo check 1` |
-| 未完了に戻す | `todo uncheck 1` |
-| 削除 | `todo delete 1` |
-| 完了済み全件をアーカイブ | `todo archive` |
-| アーカイブの一覧 | `todo archive list` |
-| アーカイブから戻す | `todo restore 1` |
-| 直前の変更を取り消す | `todo undo` |
-| ヘルプ | `todo --help` |
+| 追加（優先度：高） | `t a "h:見積書を送付する"` |
+| 追加（優先度：中） | `t a "m:資料を確認する"` |
+| 追加（優先度：低） | `t a "l:読みたい本を整理する"` |
+| 未完了の一覧 | `t l` |
+| 完了を含む一覧 | `t l --all` |
+| 完了のみの一覧 | `t l --completed` |
+| 名前で検索 | `t l --search "見積"` |
+| 優先度で絞り込み | `t l --priority high` |
+| 名前を変更 | `t e 1 --name "見積書を確認して送付する"` |
+| 優先度を変更 | `t e 1 --priority low` |
+| 完了にする | `t c 1` |
+| 未完了に戻す | `t uc 1` |
+| 削除 | `t d 1` |
+| 完了済み全件をアーカイブ | `t ar` |
+| アーカイブの一覧 | `t ar l` |
+| アーカイブから戻す | `t r 1` |
+| 直前の変更を取り消す | `t u` |
+| ヘルプ | `t --help` |
 
 優先度の省略時は `middle` です。`h:`・`m:`・`l:` は追加時に名前から取り除かれます。`--priority high` などを併用した場合はオプションを優先します。
 
@@ -69,21 +74,21 @@ Windows（PowerShell）での起動：
 IDを空白で区切って指定します。
 
 ```sh
-todo check 1 3 5
-todo uncheck 1 3
-todo delete 1 3
-todo archive 2 4
-todo restore 2 4
+t c 1 3 5
+t uc 1 3
+t d 1 3
+t ar 2 4
+t r 2 4
 ```
 
-アーカイブできるのは完了済みのタスクです。存在しないIDなどが含まれる場合は全件変更しません。`todo undo` で直前の一括操作全体を取り消せます。
+アーカイブできるのは完了済みのタスクです。存在しないIDなどが含まれる場合は全件変更しません。`t u` で直前の一括操作全体を取り消せます。
 
 ## 保存先
 
 データは常に `todo-cli/.todo` に保存されます。別の保存先を使う場合は、`todo-cli` 内のフォルダを指定してください。
 
 ```sh
-todo --data-dir ./my-tasks list
+t --data-dir ./my-tasks l
 ```
 
 WindowsとWSLで同じ一覧を使う場合は、Windows側の `todo-cli` を共有します。WSL側のbash・zsh用ひな形の先頭を次のように設定してください。パスは自分の環境に合わせて変更します。

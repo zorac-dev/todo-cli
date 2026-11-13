@@ -97,7 +97,7 @@ def positive_id(value):
 
 
 def archive_target(value):
-    return value if value == 'list' else positive_id(value)
+    return 'list' if value in ('list', 'l') else positive_id(value)
 
 
 def validate_tasks(items):
@@ -284,32 +284,37 @@ def parser():
     result = argparse.ArgumentParser(description='日本語対応のファイル管理TODO CLI')
     result.add_argument('--data-dir', default='.todo', help='todo.pyのあるフォルダを基準とする保存先 (既定: .todo)')
     commands = result.add_subparsers(dest='command', required=True)
-    listing = commands.add_parser('list', help='タスク一覧を表示')
+    def command_parser(name, alias, **kwargs):
+        sub = commands.add_parser(name, aliases=[alias], **kwargs)
+        sub.set_defaults(command=name)
+        return sub
+
+    listing = command_parser('list', 'l', help='タスク一覧を表示')
     visibility = listing.add_mutually_exclusive_group()
     visibility.add_argument('--all', action='store_true', help='完了済みを含める')
     visibility.add_argument('--completed', action='store_true', help='完了済みだけを表示')
     listing.add_argument('--priority', choices=PRIORITIES)
     listing.add_argument('--search', help='タスク名の部分一致検索')
-    add = commands.add_parser('add', help='タスクを追加')
+    add = command_parser('add', 'a', help='タスクを追加')
     add.add_argument('name', type=new_task, help='タスク名（h: / m: / l: で優先度を指定可能）')
     add.add_argument('--priority', choices=PRIORITIES,
                      help='名前の接頭辞より優先（指定がない場合はmiddle）')
-    edit = commands.add_parser('edit', help='タスク名・優先度を編集')
+    edit = command_parser('edit', 'e', help='タスク名・優先度を編集')
     edit.add_argument('id', type=positive_id)
     edit.add_argument('--name', type=task_name)
     edit.add_argument('--priority', choices=PRIORITIES)
-    for command, help_text in [('check', '完了にする'), ('uncheck', '未完了に戻す'),
-                               ('delete', '削除する'), ('restore', 'アーカイブから完了状態で戻す')]:
-        sub = commands.add_parser(command, help=help_text)
+    for command, alias, help_text in [('check', 'c', '完了にする'), ('uncheck', 'uc', '未完了に戻す'),
+                                      ('delete', 'd', '削除する'), ('restore', 'r', 'アーカイブから完了状態で戻す')]:
+        sub = command_parser(command, alias, help=help_text)
         sub.add_argument('ids', type=positive_id, nargs='+', metavar='ID',
                          help='対象ID（空白区切りで複数指定可能）')
         if command == 'delete':
             sub.add_argument('-y', '--yes', action='store_true', help='確認を省略')
-    archive = commands.add_parser('archive', help='完了済みをアーカイブ / 一覧表示')
-    archive.add_argument('targets', nargs='*', type=archive_target, metavar='ID|list',
-                         help='対象IDを指定。省略で完了済み全件、listで一覧表示')
+    archive = command_parser('archive', 'ar', help='完了済みをアーカイブ / 一覧表示')
+    archive.add_argument('targets', nargs='*', type=archive_target, metavar='ID|list|l',
+                         help='対象IDを指定。省略で完了済み全件、list（省略形: l）で一覧表示')
     archive.add_argument('-y', '--yes', action='store_true', help='確認を省略')
-    commands.add_parser('undo', help='直前の変更を1回取り消す')
+    command_parser('undo', 'u', help='直前の変更を1回取り消す')
     return result
 
 

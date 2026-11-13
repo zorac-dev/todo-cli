@@ -21,3 +21,8 @@ function todo {
 
     & $script:TodoCliPython $script:TodoCliScript @args
 }
+
+# todo の省略形
+function t {
+    todo @args
+}

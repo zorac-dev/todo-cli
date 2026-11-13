@@ -14,3 +14,8 @@ todo() {
 
     "$TODO_CLI_PYTHON" "$TODO_CLI_SCRIPT" "$@"
 }
+
+# todo の省略形
+t() {
+    todo "$@"
+}

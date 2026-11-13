@@ -56,6 +56,25 @@ class TodoTests(unittest.TestCase):
         for number in range(count):
             self.local_cli('add', f'一括操作のタスク{number + 1}')
 
+    def test_short_commands_lifecycle(self):
+        self.cli('a', 'h:省略形のタスク')
+        self.assertIn('省略形のタスク', self.cli('l', '--priority', 'high'))
+        self.cli('e', '1', '--name', '編集済み')
+        self.cli('c', '1')
+        self.assertIn('編集済み', self.cli('l', '--completed'))
+        self.cli('uc', '1')
+        self.assertFalse(self.state()['tasks'][0]['completed'])
+        self.cli('c', '1')
+        self.cli('ar', '1', '-y')
+        self.assertEqual(self.cli('ar', 'l'), self.cli('archive', 'list'))
+        self.cli('r', '1')
+        self.cli('d', '1', '-y')
+        self.assertEqual(self.state()['tasks'], [])
+        self.cli('u')
+        self.assertEqual(self.state()['tasks'][0]['name'], '編集済み')
+        self.cli('ar', 'l', '1', code=1)
+        self.assertEqual(len(self.state()['tasks']), 1)
+
     def test_bulk_check_uncheck_and_undo(self):
         self.seed_batch()
         self.local_cli('check', '1')
@@ -440,14 +459,15 @@ source "$1"
 TODO_CLI_SCRIPT="$2"
 TODO_CLI_PYTHON="$3"
 export PYTHONDONTWRITEBYTECODE=1
-todo add "h:日本語と 空白のタスク"
+t a "h:日本語と 空白のタスク"
 todo add "l:一括チェックの2件目"
 todo list
-todo check 1 2
-todo list --all
+t c 1 2
+t l --all
 todo edit 1 --priority low
 todo --help
-if todo check 999; then
+t --help
+if t c 999; then
     exit 40
 else
     test "$?" -eq 1
@@ -539,13 +559,13 @@ $ErrorActionPreference = 'Stop'
 $env:PYTHONUTF8 = '1'
 $env:PYTHONDONTWRITEBYTECODE = '1'
 . $TodoProfile
-todo add 'h:日本語と 空白のタスク'
+t a 'h:日本語と 空白のタスク'
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 todo add 'l:2件目'
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-todo check 1 2
+t c 1 2
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-todo list --all
+t l --all
 exit $LASTEXITCODE
 ''', encoding='utf-8-sig')
         caller = self.root / 'caller'
